@@ -1,0 +1,28 @@
+.mm-active .active {
+    color: #ed2525!important;
+}
+#sidebar-menu ul li a {
+    padding: 0.4rem 1.5rem;
+}
+#sidebar-menu ul li a:hover {
+    color:#ed2525;
+    cursor:pointer;
+}
+.toplink {
+    font-weight: bold;
+    
+}
+.toplink:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    font-weight: 800;
+    cursor:pointer;
+}
+
+.table-pub td {
+    padding:4px !important;
+}
+
+#loading,#loadingup,#xml_loading {
+	display: none;
+}
