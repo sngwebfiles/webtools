@@ -57,19 +57,41 @@ $("#addpost_selected").click(function() {
 });
 
 
-$("#addallpost").click(function(event){
+$("#addallpos_t").click(function(event){
     // event.preventDefault();
-    $('#loadingup').show();
+    $('#loadingup_').show();
     $.ajax({
         url: "importdata/post",
-        // type:'POST',dataType: "json",
-        // data:$(this).serialize(),
+        type:'POST',
+        // dataType: "json",
+        data:$("#wppostupload").serialize(),
         success:function(result){
             $('#loadingup').hide();
             $("#upsucc").html(result);
         }
 
     });
+});
+
+
+$("#wppostupload").submit(function (event) {
+    $('#loadingup').show();
+    $("#upsucc").html("");
+    $.ajax({
+        type:'POST',
+        url: "importdata/post",
+        
+        data: new FormData(this),  
+        // data:$("#wppostupload").serialize(),
+        cache: false,
+        contentType: false,
+        processData: false,
+        success:function(result){
+            $('#loadingup').hide();
+            $("#upsucc").html(result);
+        }
+    });
+    return false;
 });
 
 // $("#submitxml").click(function(event){
@@ -111,13 +133,14 @@ $("#addallpost").click(function(event){
             contentType: false,
             processData: false,
             success: function(res) {
-                // $('#xml_res').html("<p style='color:#000;margin-top:3px;'>"+res+"</p>");
-                $('.alert').html("<p style='color:#000;margin-top:3px;'>"+res+"</p>");
-                $('#xml_loading').hide();
+                if(res=='ok'){
+                    $('.err_input').html('<div class="alert alert-success" style="color:#000;">Successfully Publication Added!<br><b><a href="/publications">Refresh now!</a></b></div>');
+                } else {
+                   $('.err_input').html('<div class="alert alert-warning" style="color:#000;">'+res+'</div>'); 
+                }
+                
             },
-            }).done(function (data) {
-            console.log(data);
-            });
+            })
         return false;
       });
 

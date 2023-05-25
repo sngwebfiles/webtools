@@ -13,7 +13,7 @@ class ImportDataModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['title','content','category','featured_image','by_line','date_created','last_modified','created_at'];
+    protected $allowedFields    = ['title','content','category','featured_image','by_line','website','status_upload','date_created','last_modified','created_at'];
 
     // Dates
     protected $useTimestamps = false;

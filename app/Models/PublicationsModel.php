@@ -18,6 +18,7 @@ class PublicationsModel extends Model
             'parent_pub_id',
             'group_content_pub_id',
             'name',
+            'location',
             'wordpress_url',
             'published',
             'wp_rest_api_endpoint_link',

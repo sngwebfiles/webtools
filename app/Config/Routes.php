@@ -79,7 +79,8 @@ $routes->get('/index', 'Home::index');
  $routes->get('scms', 'Scms::index', ['filter' => 'authFilter']);
  $routes->get('execscript', 'Execscript::index', ['filter' => 'authFilter']);
  $routes->get('monitor', 'Monitor::index', ['filter' => 'authFilter']);
- $routes->get('publications', 'Publications::index', ['filter' => 'authFilter']);
+ $routes->get('/publications', 'Publications::index', ['filter' => 'authFilter']);
+ $routes->post('/publications/savepub', 'Publications::savepub', ['filter' => 'authFilter']);
 
  $routes->get('write-wp-digital-editions', 'DigitalEditions::write', ['filter' => 'authFilter']);
 
@@ -89,7 +90,7 @@ $routes->get('/index', 'Home::index');
 $routes->get('importdata', 'Importdata::index', ['filter' => 'authFilter']);
 $routes->get('/importdata/delete/(:any)', 'Importdata::delete/$1');
 $routes->get('/importdata/truncate', 'Importdata::truncate');
-$routes->get('/importdata/post', 'Importdata::wppoststory', ['filter' => 'authFilter']);
+$routes->post('/importdata/post', 'Importdata::wppoststory', ['filter' => 'authFilter']);
 $routes->get('importdata/deleteempty', 'Importdata::deleteempty', ['filter' => 'authFilter']);
 
 $routes->post('importdata/deletesel', 'Importdata::deleteselected', ['filter' => 'authFilter']);
@@ -97,7 +98,7 @@ $routes->post('importdata/addpostsel', 'Importdata::addpostselected', ['filter' 
 
 //  $routes->match(['get', 'post'], 'importxmldata/upload', [Importdata::class, 'write'], ['filter' => 'authFilter']);
 
-$routes->post('publications/savepub', 'Publications::savepub', ['filter' => 'authFilter']);
+
 
 //  $routes->post('savepub', 'Publications::savepub');
 //  $routes->match(['get', 'post'], 'publications/savepub', 'Publications::savepub');
