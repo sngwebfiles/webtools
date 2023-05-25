@@ -52,6 +52,11 @@ class Importdata extends BaseController
 
             helper(['form']);
 
+            if(empty($_POST['website'])){
+                echo "Please select website!";
+                exit;
+            }
+
             if($_FILES['uploadxml']['name'] != ''){
                 
 
@@ -73,50 +78,56 @@ class Importdata extends BaseController
                         if (!empty($rec->articleImage)){
                             $url = $rec->articleImage;
                             $file_path = "downloads/".basename($url);
-                            // $download =  $this->get_image_from_url_crop($url,$file_path);
+                            $download =  $this->get_image_from_url_crop($url,$file_path);
                         }
 
                     $data = [
                     'title'    => $rec->title,
                     'content' => $rec->content,
                     'category'    => $rec->blog_title,
+                    'website'    => $_POST['website'],
                     'featured_image' => $file_path,
                     'by_line'     => $rec->author_firstname . " ".  $rec->author_lastname,
                     'date_created'     =>  date('Y-m-d H:i:s', intval($rec->created_at)),
                     'last_modified'     => date('Y-m-d H:i:s', intval($rec->published_at))];
-                    $insertxml->save($data);
+
+                    // $res = $insertxml->where('title', $rec->titlel)->findAll();
+
+                    // if(!empty($res)){
+                        $insertxml->save($data);
+                    // }
+                    
 
                     $i++;
-                    // if($i==10){
+                    if($i==10){
 
-                    //     $dtend = date("Y-m-d H:i:s");
-                    //     $datetime1 = date_create($dtstart);
-                    //     $datetime2 = date_create($dtend);
-                    //     $interval = date_diff($datetime1, $datetime2);
+                        $dtend = date("Y-m-d H:i:s");
+                        $datetime1 = date_create($dtstart);
+                        $datetime2 = date_create($dtend);
+                        $interval = date_diff($datetime1, $datetime2);
 
-                    //     echo "Date Start: ".$dtstart. " and Date End: ".$dtend."<br>";
-                    //     echo $interval->format('Difference is: %h hours %i minutes %s second<br>');
-                    //     echo "Total added: ".$i."<br>";
-                    //     echo "Successfully Imported to Database.<br>";
-                    //     echo "<a href='/importdata'>Refresh now!</a>";
-                    //     exit;
-                    //     //return redirect()->to('/importdata');
-                    // }
+                        echo "Date Start: ".$dtstart. " and Date End: ".$dtend."<br>";
+                        echo $interval->format('Difference is: %h hours %i minutes %s second<br>');
+                        echo "Total added: ".$i."<br>";
+                        echo "Successfully Imported to Database.<br>";
+                        echo "<a href='/importdata'>Refresh now!</a>";
+                        exit;
+                        //return redirect()->to('/importdata');
+                    }
 
                 }
 
+                // $dtend = date("Y-m-d H:i:s");
+                // $datetime1 = date_create($dtstart);
+                // $datetime2 = date_create($dtend);
+                // $interval = date_diff($datetime1, $datetime2);
 
-                $dtend = date("Y-m-d H:i:s");
-                $datetime1 = date_create($dtstart);
-                $datetime2 = date_create($dtend);
-                $interval = date_diff($datetime1, $datetime2);
-
-                echo "Date Start: ".$dtstart. " and Date End: ".$dtend."<br>";
-                echo $interval->format('Difference is: %h hours %i minutes %s second<br>');
-                echo "Total added: ".$i."<br>";
-                echo "Successfully Imported to Database.<br>";
-                echo "<a href='/importdata'>Refresh now!</a>";
-                exit;
+                // echo "Date Start: ".$dtstart. " and Date End: ".$dtend."<br>";
+                // echo $interval->format('Difference is: %h hours %i minutes %s second<br>');
+                // echo "Total added: ".$i."<br>";
+                // echo "Successfully Imported to Database.<br>";
+                // echo "<a href='/importdata'>Refresh now!</a>";
+                // exit;
 
 
             }else{

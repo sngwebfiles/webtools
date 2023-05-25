@@ -45,6 +45,16 @@
                                                         <label for="validationCustom01" class="form-label">Upload XML File</label>
                                                         <div class="input-group">
                                                             <input type="file" class="form-control" name="uploadxml" id="uploadxml">
+
+                                                            <div class="col-sm-4">
+                                                            <select class="form-select" name="website" id="website">
+                                                                <option value="" selected>...</option>
+                                                                <option value="plainsproducer.com.au">plainsproducer.com.au</option>
+                                                                <option value="epadvocate.com.au">epadvocate.com.au</option>
+                                                                <option value="fleurieusun.com.au">fleurieusun.com.au</option>
+                                                                <option value="twowellsecho.com.au">twowellsecho.com.au</option>
+                                                            </select>
+                                                            </div>
                                                         </div>
                                                         <div class="mt-1" style="display: inline-flex;">
                                                             <button type="submit" name="submit" id="submitxml" class="btn btn-primary waves-effect waves-light">

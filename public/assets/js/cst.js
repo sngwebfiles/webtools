@@ -147,6 +147,7 @@ $("#wppostupload").submit(function (event) {
 
 $("#xmlfile").submit(function (event) {
     $('#xml_loading').show();
+    $('#xml_res').html("");
     $.ajax({
         type: "POST",
         url: "importdata/upload",
