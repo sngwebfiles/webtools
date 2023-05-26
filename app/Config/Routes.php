@@ -94,7 +94,9 @@ $routes->post('/importdata/post', 'Importdata::wppoststory', ['filter' => 'authF
 $routes->get('importdata/deleteempty', 'Importdata::deleteempty', ['filter' => 'authFilter']);
 
 $routes->post('importdata/deletesel', 'Importdata::deleteselected', ['filter' => 'authFilter']);
-$routes->post('importdata/addpostsel', 'Importdata::addpostselected', ['filter' => 'authFilter']);
+
+$routes->get('/importdata/view/(:any)', 'Importdata::viewxml/$1');
+
 
 //  $routes->match(['get', 'post'], 'importxmldata/upload', [Importdata::class, 'write'], ['filter' => 'authFilter']);
 

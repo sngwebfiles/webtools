@@ -46,14 +46,96 @@ class Importdata extends BaseController
         . view('templates/bottom');
     }
 
+    public function viewxml($id = null)
+    {
+       
+        $userModel = new UserModel();
+        $email = session('email');// $_SESSION['email'];
+        $data = $userModel->where('email', $email)->first();
+        
+        $ImportModel = new ImportDataModel();
+        $data['xmlview'] = $ImportModel->where('id', $id)->first();
+
+        // $PubModel = new PublicationsModel();
+        // $data['wpaddpost'] = $PubModel->findAll();
+
+        $info = [
+            'title' => "View XML Data",
+            'path' => "importdata",
+            'styles' => '.',
+            'script' => ''
+        ];
+        
+        $data = array_merge($data, $info);
+
+        return view('templates/header',$data)
+        . view('pages/viewxml')
+        . view('templates/bottom');
+    }
+
+    public function delete($id = null)
+    {
+        $ImportModel = new ImportDataModel();
+        $data['user'] = $ImportModel->where('id', $id)->delete();
+        return redirect()->to(base_url('importdata') );
+    }
+
+    public function deleteempty()
+    {
+       
+        $ImportModel = new ImportDataModel();
+        $data['user'] = $ImportModel->where('title','')->where('content', '')->where('category', '')->delete();
+        return redirect()->to(base_url('importdata') );
+    }
+    
+
+    function deleteselected()
+    {
+        helper(['form']);
+
+        $data = array();
+        $ImportModel = new ImportDataModel();
+
+        if(isset($_POST["post_list"])) {
+
+            if(!empty($_POST['checked_id'])) {    
+                foreach($_POST['checked_id'] as $value){
+                    $delete = $ImportModel->where('id', $value)->delete();
+                }
+            }
+        }
+        return redirect()->to(base_url('importdata') );
+    }
+
+
+    public function truncate()
+    {
+
+        // $db      = \Config\Database::connect();
+        // $builder = $db->table('tblimportadataxml');
+        // $builder->truncate();
+
+        $ImportModel = new ImportDataModel();
+        $data['user'] = $ImportModel->truncate();
+        return redirect()->to(base_url('importdata') );
+    }
 
     public function write()
     {
 
             helper(['form']);
 
+            if(empty($_FILES['uploadxml']['name'])){
+                echo "Please XML File!";
+                exit;
+            }
+
             if(empty($_POST['website'])){
                 echo "Please select website!";
+                exit;
+            }
+            if(empty($_POST['num_xml'])){
+                echo "Please insert number of XML records!";
                 exit;
             }
 
@@ -62,44 +144,60 @@ class Importdata extends BaseController
 
                 $from = $_FILES['uploadxml']['tmp_name'];
  
-                $html   = utf8_encode(file_get_contents($from));
+                // $html   = utf8_encode(file_get_contents($from));
+                $html   = file_get_contents($from);
                 $invalid_characters = '/[^\x9\xa\x20-\xD7FF\xE000-\xFFFD]/';
                 $html = preg_replace($invalid_characters, '', $html);
                 $xml = simplexml_load_string($html);
 
                 $insertxml = new ImportDataModel();   
 
+                $PubModel = new PublicationsModel();
+                $datapub = $PubModel->where('id', $_POST['website'])->first();
+
                 $i = 0;
+                $e = 0;
+                $a = 0;
                 $dtstart = date("Y-m-d H:i:s");
 
+                $folderpath = "downloads/".$datapub['name'];
+                if (!file_exists($folderpath)) {
+                    mkdir($folderpath, 0755);
+                } 
+                
                 foreach($xml->article as $rec){
 
                     $file_path="";
                         if (!empty($rec->articleImage)){
                             $url = $rec->articleImage;
-                            $file_path = "downloads/".basename($url);
-                            $download =  $this->get_image_from_url_crop($url,$file_path);
+                            $file_path = $folderpath."/".basename($url);
+                            // $download =  $this->get_image_from_url_crop($url,$file_path);
                         }
+                    
+                    $datecreated = date('Y-m-d H:i:s', intval($rec->created_at));
 
                     $data = [
                     'title'    => $rec->title,
                     'content' => $rec->content,
                     'category'    => $rec->blog_title,
+                    'guid'    => $rec->guid,
                     'website'    => $_POST['website'],
                     'featured_image' => $file_path,
                     'by_line'     => $rec->author_firstname . " ".  $rec->author_lastname,
-                    'date_created'     =>  date('Y-m-d H:i:s', intval($rec->created_at)),
+                    'date_created'     =>  $datecreated,
                     'last_modified'     => date('Y-m-d H:i:s', intval($rec->published_at))];
 
-                    // $res = $insertxml->where('title', $rec->titlel)->findAll();
+                    $res = $insertxml->where('title', $rec->title)->where('category', $rec->blog_title)->where('date_created', $datecreated)->first();
 
-                    // if(!empty($res)){
-                        $insertxml->save($data);
-                    // }
-                    
+                    if ($res==null){
+                       $insertxml->save($data);
+                        $a++;
+                    } else {
+                        $e++;
+                    }
 
                     $i++;
-                    if($i==10){
+                    if($i==$_POST['num_xml']){
 
                         $dtend = date("Y-m-d H:i:s");
                         $datetime1 = date_create($dtstart);
@@ -108,7 +206,9 @@ class Importdata extends BaseController
 
                         echo "Date Start: ".$dtstart. " and Date End: ".$dtend."<br>";
                         echo $interval->format('Difference is: %h hours %i minutes %s second<br>');
-                        echo "Total added: ".$i."<br>";
+                        echo "Total inserted: ".$a."<br>";
+                        echo "Total exits: ".$e."<br>";
+                        echo "Total requests to insert: ".$i."<br>";
                         echo "Successfully Imported to Database.<br>";
                         echo "<a href='/importdata'>Refresh now!</a>";
                         exit;
@@ -116,19 +216,6 @@ class Importdata extends BaseController
                     }
 
                 }
-
-                // $dtend = date("Y-m-d H:i:s");
-                // $datetime1 = date_create($dtstart);
-                // $datetime2 = date_create($dtend);
-                // $interval = date_diff($datetime1, $datetime2);
-
-                // echo "Date Start: ".$dtstart. " and Date End: ".$dtend."<br>";
-                // echo $interval->format('Difference is: %h hours %i minutes %s second<br>');
-                // echo "Total added: ".$i."<br>";
-                // echo "Successfully Imported to Database.<br>";
-                // echo "<a href='/importdata'>Refresh now!</a>";
-                // exit;
-
 
             }else{
                 $statusMsg = 'Please select a file to upload.';
@@ -138,7 +225,6 @@ class Importdata extends BaseController
             return redirect()->to('/importdata');
 
         }
-
 
         public function get_image_from_url_crop($image_url,$file_path) {
  
@@ -163,55 +249,6 @@ class Importdata extends BaseController
         
         }
 
-
-
-        public function delete($id = null)
-        {
-            $ImportModel = new ImportDataModel();
-            $data['user'] = $ImportModel->where('id', $id)->delete();
-            return redirect()->to(base_url('importdata') );
-        }
-
-        public function deleteempty()
-        {
-           
-            $ImportModel = new ImportDataModel();
-            $data['user'] = $ImportModel->where('title','')->where('content', '')->where('category', '')->delete();
-            return redirect()->to(base_url('importdata') );
-        }
-        
-
-        function deleteselected()
-        {
-            helper(['form']);
-
-            $data = array();
-            $ImportModel = new ImportDataModel();
-
-            if(isset($_POST["post_list"])) {
-
-                if(!empty($_POST['checked_id'])) {    
-                    foreach($_POST['checked_id'] as $value){
-                        $delete = $ImportModel->where('id', $value)->delete();
-                    }
-                }
-            }
-            return redirect()->to(base_url('importdata') );
-        }
-
-
-        public function truncate()
-        {
-
-            // $db      = \Config\Database::connect();
-            // $builder = $db->table('tblimportadataxml');
-            // $builder->truncate();
-
-            $ImportModel = new ImportDataModel();
-            $data['user'] = $ImportModel->truncate();
-            return redirect()->to(base_url('importdata') );
-        }
-       
         public function wppoststory()
         {
  
@@ -223,59 +260,58 @@ class Importdata extends BaseController
                     $pubid = $_POST['pub_id'];
                     $numpost = $_POST['num_post'];
 
-                    $data = $pubSite->where('pub_id', $pubid)->first();
+                    $data = $pubSite->where('id', $pubid)->first();
         
                     $rest_api_url = $data['wp_rest_api_endpoint_link']."posts";
                     $rest_api_media = $data['wp_rest_api_endpoint_link']."media";
+                    $rest_api_category = $data['wp_rest_api_endpoint_link']."categories";
+
                     $wp_uname = $data['wp_rest_api_user'];
                     $wp_pass = $data['wp_rest_api_pass'];
 
                     $restmedia = array("url"=>$rest_api_media,"user"=>$wp_uname,"pass"=>$wp_pass);
-        
+                    $restcategory = array("url"=>$rest_api_category,"user"=>$wp_uname,"pass"=>$wp_pass);
+
                     $ImportModel = new ImportDataModel();
-                    // $data = $ImportModel->findAll($numpost);
-                    $data = $ImportModel->where('status_upload', 0)->findAll($numpost);
-                    
+                    $data = $ImportModel->where('status_upload', 0)->where('website', $pubid)->findAll($numpost);
+
                     $count = 0;
+                    $img = 0;
                     $dtstart = date("Y-m-d H:i:s");
-        
-                    // echo "Date start: ".$dtstart."<br>";
         
                     foreach ($data as $pub){
               
-                        $category = "6"; 
+                        $categoryid = $this->check_category($pub['category'],$restcategory); 
                         $tags = "12";  
                         $status = "publish";   //One of: publish, future, draft, pending, private
         
+                        // echo $categoryid."<br>";
+                        // exit;
                         $imagepath = $pub['featured_image'];
-                        
-                        $img_featured_Id="";
+                        $img_featured_Id="0";
 
                         if (!empty($imagepath)){
-                            // $img_featured_Id = $this->upload_media($imagepath,$restmedia);
-                            echo $imagepath;
-                        } else {
-                            echo "wala";
-                             exit;
+                            $img_featured_Id = $this->upload_media($imagepath,$restmedia);  //FOR UPLOADING FEATURED IMAGE
+                            $img++;
                         }
-
-                       
-
+            
                         $data_string = json_encode([
                             'title'    => $pub['title'],
                             'content'  => $pub['content'],
-                            'categories'   => $category,
+                            'categories'   => $categoryid,
                             'featured_media'   => $img_featured_Id,
-                            'tags'   => $tags,
-                            'status' =>  $status,
-                            'author'   => 2	
+                            'modified'   => $pub['last_modified'],
+                            'pm_blog_title'   => "pm_blog_title",
+                            'date'   => $pub['date_created'],
+                            'status' =>  $status
+                            // 'tags'   => $tags,
+                            
                         ]);
 
                             $ch = curl_init();
                             curl_setopt($ch, CURLOPT_URL, $rest_api_url);
                             curl_setopt($ch, CURLOPT_POST, 1);
                             curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-                            // curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,300);
 
                             curl_setopt($ch, CURLOPT_HTTPHEADER, [
                                 'Content-Type: application/json',
@@ -298,19 +334,23 @@ class Importdata extends BaseController
                             $post_id = $result->id;
                             
                             if (!empty($imagepath)){
-                                $updateimage = $this->attach_image($post_id,$img_featured_Id,$restmedia);
+                               $updateimage = $this->attach_image($post_id,$img_featured_Id,$restmedia);   //FOR UPDATING FEATURED IMAGE
                             }
                             
-
                             $id = $pub['id'];
-                            $result = $ImportModel->where('id', $id)->set(['status_upload' => '1'])->update();
+                           $result = $ImportModel->where('id', $id)->set(['status_upload' => '1','website'=>$pubid])->update();
                     }
         
-                    echo "Date Start: ".$dtstart. " and Date End: ".date("Y-m-d H:i:s")."<br>";
-                    echo "Total Post: ".$count."<br>";
-                    // echo $updateimage."<br>";
-                    // echo "Featured Image local: ".$path."<br>";
-                    // echo "Featured Image online: ".$digital_edition_direct_url."<br>";
+                    $dtend = date("Y-m-d H:i:s");
+                    $datetime1 = date_create($dtstart);
+                    $datetime2 = date_create($dtend);
+                    $interval = date_diff($datetime1, $datetime2);
+
+                    echo "Date Start: ".$dtstart. " and Date End: ".$dtend."<br>";
+                    echo $interval->format('Difference is: %h hours %i minutes %s second<br>');
+                    echo "Total Post request: ".$numpost."<br>";
+                    echo "Total Post added online: ".$count."<br>";
+                    echo "Total Featured Image added: ".$count."<br>";
                     echo "Successfully WP Post Story created.";
 
                 } else {
@@ -352,7 +392,6 @@ class Importdata extends BaseController
 
         function attach_image($post_id, $media_id,$rest) {
 
-            
             $rest_api_url = $rest['url']."/". $media_id ;
             $data_string = json_encode([
                 'post' => $post_id
@@ -381,5 +420,47 @@ class Importdata extends BaseController
          }
 
 
+         public function check_category($str,$rest)
+         {
+     
+            // , "Events", "Fleurieu Sun", "Real Estate"
+            $news = array("Community News", "Business News", "News", "Rural News", "Rural News");
+            $sport = array("Sports", "Bowls", "Sport", "Soccer", "Football", "Netball", "Golf", "Basketball", "Combat Sports", "Basketball", "Tennis", "Cricket");
+            $entertainment = array("Entertainment News", "Entertainment");
+            $digitaledition = array("Digital Editions",);
+
+            if (in_array($str, $news))
+            {
+                $category = "News";
+            } else if (in_array($str, $sport)) {
+                $category = "Sport";
+            } else if (in_array($str, $entertainment)) {
+                $category = "Entertainment";
+            } else if (in_array($str, $digitaledition)) {
+                $category = "Temporary Digital Editions";
+            } else {
+                $category = "News";
+            }
+
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $rest['url']);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Authorization: Basic ' . base64_encode($rest['user'] . ':' . $rest['pass']),
+                ]);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+                $result = curl_exec($ch);
+                $response_data = json_decode($result);
+        
+                curl_close($ch);
+                foreach ($response_data as $lst) {
+                    if ($lst->name ==$category){
+                        // return $str . " - " . $lst->name . " - ". $lst->id;
+                        return $lst->id;
+                    }
+                }
+
+         }
 
 }

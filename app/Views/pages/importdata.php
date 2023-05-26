@@ -47,14 +47,14 @@
                                                             <input type="file" class="form-control" name="uploadxml" id="uploadxml">
 
                                                             <div class="col-sm-4">
-                                                            <select class="form-select" name="website" id="website">
-                                                                <option value="" selected>...</option>
-                                                                <option value="plainsproducer.com.au">plainsproducer.com.au</option>
-                                                                <option value="epadvocate.com.au">epadvocate.com.au</option>
-                                                                <option value="fleurieusun.com.au">fleurieusun.com.au</option>
-                                                                <option value="twowellsecho.com.au">twowellsecho.com.au</option>
-                                                            </select>
+                                                                <select class="form-select" name="website" id="website">
+                                                                    <option value="" selected>...</option>
+                                                                    <?php foreach ($wpaddpost as $pub) {   ?>
+                                                                        <?php echo "<option value='".$pub['id']."'>".$pub['name'] ."</option>"; ?>
+                                                                    <?php } ?>
+                                                                </select>
                                                             </div>
+                                                            <input type="number" class="form-control" id="num_xml" name="num_xml" value="1" >
                                                         </div>
                                                         <div class="mt-1" style="display: inline-flex;">
                                                             <button type="submit" name="submit" id="submitxml" class="btn btn-primary waves-effect waves-light">
@@ -107,7 +107,7 @@
                                                          <? //echo $count; ?>
                                                     </div>
                                                </td>
-                                                <td><?= $pub['title'] ?></td>
+                                                <td><a href="<?= base_url()."importdata/view/".$pub['id'] ?>" target="_blank"><?= $pub['title'] ?></a></td>
                                                 <td><?php 
                                                     if (strlen($pub['content']) > 10)
                                                     {
@@ -146,7 +146,7 @@
                                                         <select class="form-select" name="pub_id" id="pub_id">
                                                             <option value="" selected>...</option>
                                                             <?php foreach ($wpaddpost as $pub) {   ?>
-                                                                <?php echo "<option value='".$pub['pub_id']."'>".$pub['name'] ."</option>"; ?>
+                                                                <?php echo "<option value='".$pub['id']."'>".$pub['name'] ."</option>"; ?>
                                                             <?php } ?>
                                                         </select>
                                                     </div>
