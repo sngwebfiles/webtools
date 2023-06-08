@@ -13,7 +13,7 @@
                     <div class="container-fluid">
                         <?php echo view('partials/breadcrumbs'); ?>
                         <!-- Page Content Start -->
-                        <?= $xmlview['title'] ?><br><br>
+                        <h4><?= $xmlview['title'] ?></h4><br><br>
                         <?= $xmlview['content'] ?>
                         <!-- Page Content End -->
                     </div>

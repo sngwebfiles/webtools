@@ -23,6 +23,6 @@
     padding:4px !important;
 }
 
-#loading,#loadingup,#xml_loading {
+#loading,#loadingup,#xml_loading,#loadingsrh,#loadingdel,.progress2 {
 	display: none;
 }

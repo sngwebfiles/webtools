@@ -1,17 +1,4 @@
 
-function delete_confirm(){
-    if($('.checkbox:checked').length > 0){
-        var result = confirm("Are you sure to delete selected users?");
-        if(result){
-            return true;
-        }else{
-            return false;
-        }
-    }else{
-        alert('Select at least 1 record to delete.');
-        return false;
-    }
-}
 
 $('#select_all').on('click',function(){
     if(this.checked){
@@ -41,7 +28,7 @@ $("#addpost_selected").click(function() {
     // var data = $('#myForm').serializeArray();
     $.ajax({
         type: "POST",
-        url: "http://localhost:8080/importdata/addpostsel",
+        url: "importdata/addpostsel",
         data: $("#post_list").serialize(),
         // dataType: "json",
         success: function(data) {
@@ -94,60 +81,55 @@ $("#wppostupload").submit(function (event) {
     return false;
 });
 
-// $("#submitxml").click(function(event){
-//     event.preventDefault();
-//     $('#xml_loading').show();
 
-//     $.ajax({
-//         type: "POST",
-//         url: "importdata/upload",
-//         data: $("#xmlfile").serialize(),
-//         // dataType: "json",
-//         success: function(data) {
-//             alert(data);
-//             $('#xml_loading').html(data);
-//         }
-//         ,
-//         error: function() {
-//             alert('error handling here');
-//         }
-//     });
+$("#wppostsearch").submit(function (event) {
+    $('#loadingsrh').show();
+    $("#upsuccsearch").html("");
+    $.ajax({
+        type:'POST',
+        url: "importdata/search",
+        
+        data: new FormData(this),  
+        cache: false,
+        contentType: false,
+        processData: false,
+        success:function(result){
+            $('#loadingsrh').hide();
+            $("#upsuccsearch").html(result);
+        }
+    });
+    return false;
+});
 
-// });
-
-    //   enctype: 'multipart/form-data',
-    //   method: 'POST',
-    //   headers: {'X-Requested-With': 'XMLHttpRequest'},
-    //   encode: true,
-
-
+$("#addpub").submit(function (event) {
     
-
-    $("#addpub").submit(function (event) {
-       
-        $.ajax({
-            type: "POST",
-            url: $(this).attr("action"),
-            data: new FormData(this),   
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function(res) {
-                if(res=='ok'){
-                    $('.err_input').html('<div class="alert alert-success" style="color:#000;">Successfully Publication Added!<br><b><a href="/publications">Refresh now!</a></b></div>');
-                } else {
-                   $('.err_input').html('<div class="alert alert-warning" style="color:#000;">'+res+'</div>'); 
-                }
-                
-            },
-            })
-        return false;
-      });
+    $.ajax({
+        type: "POST",
+        url: $(this).attr("action"),
+        data: new FormData(this),   
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function(res) {
+            if(res=='ok'){
+                $('.err_input').html('<div class="alert alert-success" style="color:#000;">Successfully Publication Added!<br><b><a href="/publications">Refresh now!</a></b></div>');
+            } else {
+                $('.err_input').html('<div class="alert alert-warning" style="color:#000;">'+res+'</div>'); 
+            }
+            
+        },
+        })
+    return false;
+    });
 
 
 $("#xmlfile").submit(function (event) {
     $('#xml_loading').show();
     $('#xml_res').html("");
+    // $('.progress').hide();
+
+
+
     $.ajax({
         type: "POST",
         url: "importdata/upload",
@@ -158,6 +140,35 @@ $("#xmlfile").submit(function (event) {
         success: function(res) {
             $('#xml_res').html("<p style='color:#000;margin-top:3px;'>"+res+"</p>");
             $('#xml_loading').hide();
+            $('.progress').show();
+        },beforeSend: function(){
+                // $('#getdata').html("");
+                // $('.progress').show();
+                // const intervalID = setInterval(getData, 1000);
+           },
+        }).done(function (data) {
+        console.log(data);
+        // clearInterval(intervalID);
+        });
+
+    return false;
+  });
+
+
+
+  $("#post_list").submit(function (event) {
+    $('#loadingdel').show();
+    $('#upsuccdel').html("");
+    $.ajax({
+        type: "POST",
+        url: "importdata/deletesel",
+        data: new FormData(this),   
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function(res) {
+            $('#upsuccdel').html("<p style='color:#000;margin-top:3px;'>"+res+"</p>");
+            $('#loadingdel').hide();
         },
         }).done(function (data) {
         console.log(data);
@@ -167,47 +178,21 @@ $("#xmlfile").submit(function (event) {
   });
 
 
+               
 
-
-
-// $('.delete_checkbox').click(function(){
-//     if($(this).is(':checked'))
-//     {
-//      $(this).closest('tr').addClass('removeRow');
-//     }
-//     else
-//     {
-//      $(this).closest('tr').removeClass('removeRow');
-//     }
-//    });
-
-
-// $('#delete_selected').click(function(){
-  
-//     var checkbox = $('.delete_checkbox:checked');
-//     if(checkbox.length > 0)
-//     {
-//      var checkbox_value = [];
-//      $(checkbox).each(function(){
-//       checkbox_value.push($(this).val());
-//      });
-//      $.ajax({
-//       url:"importdata/deletesel",
-//       method:"POST",
-//       data:{checkbox_value:checkbox_value},
-//       success:function()
-//       {
-//        $('.removeRow').fadeOut(1500);
-//         alert(checkbox_value);
-//       }
-//      })
-
-   
-//     }
-//     else
-//     {
-//      alert('Select atleast one records');
-//     }
-
-
-//    });
+var poll = true;
+var getData = function() {
+    if (poll) {
+        $('#getdata').html("");
+        // $('.progress').show();
+        $.get('importdata/count', function(data) { 
+            data = JSON.parse(data);
+            var max = data[0];
+            var value = data[1];
+            $('#getdata').html("Progress: "+value+" out of "+max); 
+            $('.progress-bar').attr('aria-valuenow', value);
+            $('.progress-bar').attr('aria-valuemax', max);
+            $('.progress-bar').css('width', value + '%');
+        });
+    }
+};

@@ -92,15 +92,15 @@ $routes->get('/importdata/delete/(:any)', 'Importdata::delete/$1');
 $routes->get('/importdata/truncate', 'Importdata::truncate');
 $routes->post('/importdata/post', 'Importdata::wppoststory', ['filter' => 'authFilter']);
 $routes->get('importdata/deleteempty', 'Importdata::deleteempty', ['filter' => 'authFilter']);
-
+$routes->post('/importdata/search', 'Importdata::wppostsearch', ['filter' => 'authFilter']);
 $routes->post('importdata/deletesel', 'Importdata::deleteselected', ['filter' => 'authFilter']);
 
 $routes->get('/importdata/view/(:any)', 'Importdata::viewxml/$1');
-
+$routes->get('importdata/count', 'Importdata::totalcount', ['filter' => 'authFilter']);
 
 //  $routes->match(['get', 'post'], 'importxmldata/upload', [Importdata::class, 'write'], ['filter' => 'authFilter']);
 
-
+$routes->get('testxml', 'Importdata::testxml', ['filter' => 'authFilter']);
 
 //  $routes->post('savepub', 'Publications::savepub');
 //  $routes->match(['get', 'post'], 'publications/savepub', 'Publications::savepub');
